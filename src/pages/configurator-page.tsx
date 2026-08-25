@@ -80,18 +80,28 @@ export default function ConfiguratorPage() {
   // refs per scroll automatico
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
-  const { data: models, isLoading: modelsLoading } = useQuery({
+  const { data: modelsData, isLoading: modelsLoading } = useQuery({
     queryKey: ["wheel-categories"],
     queryFn: CatalogService.listWheelCategories,
   })
 
-  const { data: allOptionals = [] } = useQuery({
+  const { data: allOptionalsData } = useQuery({
     queryKey: ["components"],
     queryFn: CatalogService.listWheelComponents,
   })
 
+  const models = useMemo(
+    () => (Array.isArray(modelsData) ? modelsData : []),
+    [modelsData]
+  )
+
+  const allOptionals = useMemo(
+    () => (Array.isArray(allOptionalsData) ? allOptionalsData : []),
+    [allOptionalsData]
+  )
+
   useEffect(() => {
-    if (!slug || !models) return
+    if (!slug || models.length === 0) return
     const name = SLUG_TO_NAME[slug]
     if (!name) {
       navigate("/", { replace: true })
@@ -124,7 +134,7 @@ export default function ConfiguratorPage() {
 
   const availableModels = useMemo(() => {
     const visibleModelNames = new Set(Object.keys(MODEL_DISPLAY_NAMES))
-    return models?.filter((m) => visibleModelNames.has(m.name)) ?? []
+    return models.filter((m) => visibleModelNames.has(m.name))
   }, [models])
 
   const selectedModel = useMemo(
@@ -134,10 +144,11 @@ export default function ConfiguratorPage() {
 
   const wheel_hubs = useMemo(() => {
     const officialHubNames = new Set<string>(HUB_OPTION_ORDER)
-    const source =
+    const sourceData =
       selectedModel?.wheel_hubs ??
       availableModels.find((m) => m.id === wheelCategoryId)?.wheel_hubs ??
       []
+    const source = Array.isArray(sourceData) ? sourceData : []
 
     return source
       .filter((m) => officialHubNames.has(m.name))
