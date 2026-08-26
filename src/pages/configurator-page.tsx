@@ -80,6 +80,8 @@ export default function ConfiguratorPage() {
   // refs per scroll automatico
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const shouldScrollStepRef = useRef(false)
+  const shouldScrollToSaveButtonRef = useRef(false)
+  const saveButtonRef = useRef<HTMLButtonElement | null>(null)
 
   const { data: modelsData, isLoading: modelsLoading } = useQuery({
     queryKey: ["wheel-categories"],
@@ -124,6 +126,7 @@ export default function ConfiguratorPage() {
     if (!token) return
     const returnTo = restoreDraft()
     if (returnTo === location.pathname) {
+      shouldScrollToSaveButtonRef.current = true
       setStep("summary")
     }
   }, [location.pathname, restoreDraft, setStep, token])
@@ -185,6 +188,18 @@ export default function ConfiguratorPage() {
     !selectedSpoke ? "raggi" : null,
   ].filter((item): item is string => Boolean(item))
   const configurationComplete = missingRequirements.length === 0
+
+  useEffect(() => {
+    if (!token || step !== "summary" || !shouldScrollToSaveButtonRef.current) return
+
+    const timer = window.setTimeout(() => {
+      const target = saveButtonRef.current ?? sectionRefs.current.summary
+      if (target) slowScrollTo(target, window.innerWidth < 640 ? 150 : 130)
+      shouldScrollToSaveButtonRef.current = false
+    }, 260)
+
+    return () => window.clearTimeout(timer)
+  }, [step, token, configurationComplete])
 
   const total = useMemo(() => {
     if (!selectedModel) return 0
@@ -490,6 +505,7 @@ export default function ConfiguratorPage() {
                   )}
                   {token && (
                     <Button
+                      ref={saveButtonRef}
                       variant="accent"
                       size="lg"
                       className="w-full"
@@ -562,8 +578,8 @@ function uniqueWheelImageOptionals(components: WheelComponent[]) {
   return components
 }
 
-function slowScrollTo(el: HTMLElement) {
-  const headerOffset = window.innerWidth < 640 ? 166 : 124
+function slowScrollTo(el: HTMLElement, offset?: number) {
+  const headerOffset = offset ?? (window.innerWidth < 640 ? 166 : 124)
   const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset)
   const startY = window.scrollY
   const distance = targetY - startY
