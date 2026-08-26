@@ -51,7 +51,7 @@ export default function RegisterForm() {
         name: capitalizeName(registerValues.name),
         last_name: capitalizeName(registerValues.last_name),
       })
-      toast.success("Registrazione completata. Ora puoi accedere.")
+      toast.success("Registrazione completata. Ti abbiamo inviato una mail di conferma.")
       navigate("/login", { state: { from }, replace: true })
     } catch (error) {
       const msg =
