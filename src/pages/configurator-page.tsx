@@ -266,8 +266,8 @@ export default function ConfiguratorPage() {
     <div className="flex min-h-screen flex-col bg-background">
       {/* ── Header sticky ── */}
       <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex max-w-full items-center justify-between gap-3 px-4 py-3 lg:px-8">
-          <div className="min-w-0">
+        <div className="mx-auto flex max-w-full flex-col items-stretch gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <div className="min-w-0 flex-1">
             <Button
               variant="ghost"
               size="sm"
@@ -277,13 +277,13 @@ export default function ConfiguratorPage() {
               <ArrowLeft className="mr-1 size-4" />
               Indietro
             </Button>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="truncate text-2xl font-semibold tracking-tight">
+            <div className="flex items-center">
+              <h1 className="max-w-full text-balance text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
                 {configuratorTitle}
               </h1>
             </div>
           </div>
-          <div className="shrink-0 rounded-lg border bg-card px-3 py-2 text-right shadow-sm sm:px-4">
+          <div className="shrink-0 rounded-lg border bg-card px-3 py-2 text-left shadow-sm sm:px-4 sm:text-right">
             <p className="text-xs font-medium text-muted-foreground">Prezzo totale</p>
             <p className="text-xl font-semibold tracking-tight text-primary sm:text-2xl">{formatPrice(total)}</p>
           </div>
