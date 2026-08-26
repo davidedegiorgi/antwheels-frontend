@@ -71,7 +71,7 @@ export default function AppShell({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden size-10 rounded-full border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground sm:inline-flex"
+                  className="size-10 rounded-full border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground"
                   onClick={handleLogout}
                   aria-label="Esci"
                 >
@@ -122,7 +122,7 @@ function getInitials(name?: string, lastName?: string | null) {
 function AppSplash() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#020202] animate-splash-out">
-      <div className="relative flex w-full max-w-4xl flex-col items-center px-8">
+      <div className="relative flex w-full max-w-4xl -translate-y-8 flex-col items-center px-8 sm:translate-y-0">
         <img
           src="/antwheels-logo-new.png"
           alt="ANTWHEELS"

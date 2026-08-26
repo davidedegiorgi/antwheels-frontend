@@ -79,6 +79,7 @@ export default function ConfiguratorPage() {
 
   // refs per scroll automatico
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const shouldScrollStepRef = useRef(false)
 
   const { data: modelsData, isLoading: modelsLoading } = useQuery({
     queryKey: ["wheel-categories"],
@@ -99,6 +100,11 @@ export default function ConfiguratorPage() {
     () => (Array.isArray(allOptionalsData) ? allOptionalsData : []),
     [allOptionalsData]
   )
+
+  useEffect(() => {
+    shouldScrollStepRef.current = false
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  }, [slug])
 
   useEffect(() => {
     if (!slug || models.length === 0) return
@@ -122,14 +128,18 @@ export default function ConfiguratorPage() {
     }
   }, [location.pathname, restoreDraft, setStep, token])
 
-  // scroll alla sezione attiva quando cambia lo step
   useEffect(() => {
+    if (!shouldScrollStepRef.current) return
+    shouldScrollStepRef.current = false
+
     const el = sectionRefs.current[step]
-    if (el) {
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "start" })
-      }, 50)
-    }
+    if (!el) return
+
+    const timer = window.setTimeout(() => {
+      slowScrollTo(el)
+    }, 140)
+
+    return () => window.clearTimeout(timer)
   }, [step])
 
   const availableModels = useMemo(() => {
@@ -216,6 +226,8 @@ export default function ConfiguratorPage() {
 
   // indice dello step attivo (per il nav)
   const stepIndex = WIZARD_STEPS.findIndex((s) => s.id === step)
+  const progressPercent =
+    stepIndex <= 0 ? 0 : (stepIndex / Math.max(WIZARD_STEPS.length - 1, 1)) * 100
 
   const isMtbModel = selectedModel?.name.toLowerCase().includes("mtb") ?? false
 
@@ -293,7 +305,7 @@ export default function ConfiguratorPage() {
           <div
             className="h-full bg-primary transition-all duration-500"
             style={{
-              width: `${((stepIndex + 1) / WIZARD_STEPS.length) * 100}%`,
+              width: `${progressPercent}%`,
             }}
           />
         </div>
@@ -333,6 +345,7 @@ export default function ConfiguratorPage() {
                   onChange={(ids) => {
                     setSelectedOptionalIds(ids)
                     if (ids.some((id) => interiorOptionals.find((o) => o.id === id))) {
+                      shouldScrollStepRef.current = true
                       setStep("motor")
                     }
                   }}
@@ -362,6 +375,7 @@ export default function ConfiguratorPage() {
                       }
 
                       setWheelHubId(id)
+                      shouldScrollStepRef.current = true
                       setStep("extras")
                     }}
                   />
@@ -389,7 +403,12 @@ export default function ConfiguratorPage() {
                         modelName={selectedModel?.name}
                         onChange={(ids) => {
                           setSelectedOptionalIds(ids)
-                          setStep("extras")
+                          if (ids.some((id) => opts.find((o) => o.id === id && isSpokeOptional(o)))) {
+                            shouldScrollStepRef.current = true
+                            setStep("summary")
+                          } else {
+                            setStep("extras")
+                          }
                         }}
                       />
                     </div>
@@ -533,6 +552,25 @@ function isInteriorOptional(optional: WheelComponent) {
 
 function uniqueWheelImageOptionals(components: WheelComponent[]) {
   return components
+}
+
+function slowScrollTo(el: HTMLElement) {
+  const headerOffset = 112
+  const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset)
+  const startY = window.scrollY
+  const distance = targetY - startY
+  const duration = 850
+  const start = window.performance.now()
+  const easeInOut = (value: number) =>
+    value < 0.5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2
+
+  function tick(now: number) {
+    const progress = Math.min(1, (now - start) / duration)
+    window.scrollTo(0, startY + distance * easeInOut(progress))
+    if (progress < 1) window.requestAnimationFrame(tick)
+  }
+
+  window.requestAnimationFrame(tick)
 }
 
 function MotorStep({

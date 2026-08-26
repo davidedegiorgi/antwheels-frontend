@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Mail, Phone } from "lucide-react"
-import { useEffect } from "react"
 import { Link, useParams } from "react-router"
 
 type LegalKind = "privacy" | "termini" | "contatti"
@@ -71,13 +70,6 @@ export default function LegalPage() {
   const { type } = useParams<{ type?: string }>()
   const kind = isLegalKind(type) ? type : "privacy"
   const content = CONTENT[kind]
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-    const frame = window.requestAnimationFrame(() => window.scrollTo(0, 0))
-
-    return () => window.cancelAnimationFrame(frame)
-  }, [kind])
 
   return (
     <div className="mx-auto w-full max-w-3xl py-6 sm:py-10">
