@@ -14,7 +14,7 @@ function PasswordInput({
       <InputPrimitive
         type={showPassword ? "text" : "password"}
         className={cn(
-          "h-10 w-full rounded-md border border-input bg-transparent px-3 pr-10 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
+          "h-10 w-full rounded-md border border-input bg-transparent px-3 pr-10 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
           className
         )}
         {...props}

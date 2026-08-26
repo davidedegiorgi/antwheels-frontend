@@ -226,8 +226,16 @@ export default function ConfiguratorPage() {
 
   // indice dello step attivo (per il nav)
   const stepIndex = WIZARD_STEPS.findIndex((s) => s.id === step)
+  const progressStepCount = Math.max(WIZARD_STEPS.length - 1, 1)
+  const mtbStartsWithProfile = selectedModel?.name.toLowerCase().includes("mtb") ?? false
   const progressPercent =
-    stepIndex <= 0 ? 0 : (stepIndex / Math.max(WIZARD_STEPS.length - 1, 1)) * 100
+    modelsLoading || !selectedModel
+      ? 0
+      : stepIndex <= 0
+        ? mtbStartsWithProfile
+          ? (1 / progressStepCount) * 100
+          : 0
+        : (stepIndex / progressStepCount) * 100
 
   const isMtbModel = selectedModel?.name.toLowerCase().includes("mtb") ?? false
 
@@ -555,11 +563,11 @@ function uniqueWheelImageOptionals(components: WheelComponent[]) {
 }
 
 function slowScrollTo(el: HTMLElement) {
-  const headerOffset = 112
+  const headerOffset = window.innerWidth < 640 ? 166 : 124
   const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset)
   const startY = window.scrollY
   const distance = targetY - startY
-  const duration = 850
+  const duration = 950
   const start = window.performance.now()
   const easeInOut = (value: number) =>
     value < 0.5 ? 2 * value * value : 1 - Math.pow(-2 * value + 2, 2) / 2

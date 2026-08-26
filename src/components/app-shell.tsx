@@ -128,7 +128,7 @@ function AppSplash() {
           alt="ANTWHEELS"
           className="w-full max-w-[760px] object-contain opacity-0 animate-splash-logo"
         />
-        <div className="mt-8 h-px w-full max-w-sm overflow-hidden bg-white/10">
+        <div className="mt-4 h-px w-full max-w-sm overflow-hidden bg-white/10">
           <div className="h-full w-1/2 bg-white animate-loader-line" />
         </div>
       </div>
