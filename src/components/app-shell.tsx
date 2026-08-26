@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
 import LegalLinks from "@/components/legal-links"
 import { Button } from "@/components/ui/button"
-import { AuthService } from "@/features/auth/auth.service"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { useConfiguratorStore } from "@/features/configurator/configurator.store"
 import { cn } from "@/lib/utils"
-import { LogOut, User } from "lucide-react"
-import { Link, useLocation, useNavigate } from "react-router"
+import { User } from "lucide-react"
+import { Link, useLocation } from "react-router"
 
 export default function AppShell({
   children,
@@ -15,7 +14,6 @@ export default function AppShell({
 }) {
   const { user, token } = useAuthStore()
   const saveDraft = useConfiguratorStore((s) => s.saveDraft)
-  const navigate = useNavigate()
   const location = useLocation()
   const isConfiguratorPage = location.pathname.startsWith("/configura")
   const [showSplash, setShowSplash] = useState(() => location.pathname === "/")
@@ -33,11 +31,6 @@ export default function AppShell({
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" })
   }, [location.pathname])
-
-  async function handleLogout() {
-    await AuthService.logout()
-    navigate("/")
-  }
 
   function handleAuthLinkClick() {
     if (isConfiguratorPage) saveDraft(location.pathname)
@@ -58,26 +51,15 @@ export default function AppShell({
 
           <div className="ml-auto flex items-center gap-2">
             {token && user ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-10 rounded-full border border-white/15 bg-white/[0.03] text-sm font-semibold uppercase text-foreground hover:bg-white/10"
-                  render={<Link to="/area-personale" />}
-                  aria-label="Area personale"
-                >
-                  {getInitials(user.name, user.last_name)}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-10 rounded-full border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground"
-                  onClick={handleLogout}
-                  aria-label="Esci"
-                >
-                  <LogOut className="size-4" />
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-10 rounded-full border border-white/15 bg-white/[0.03] text-sm font-semibold uppercase text-foreground hover:bg-white/10"
+                render={<Link to="/area-personale" />}
+                aria-label="Area personale"
+              >
+                {getInitials(user.name, user.last_name)}
+              </Button>
             ) : (
               <div className="flex items-center gap-1.5">
                 <Button

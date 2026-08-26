@@ -6,7 +6,7 @@ import { AuthService } from "@/features/auth/auth.service"
 import { useAuthStore } from "@/features/auth/auth.store"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { AlertTriangle, Save, UserRound } from "lucide-react"
+import { AlertTriangle, LogOut, Save, UserRound } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router"
@@ -47,6 +47,14 @@ export default function AccountPage() {
     },
     onError: () => {
       toast.error("Non è stato possibile eliminare l'account")
+    },
+  })
+
+  const logout = useMutation({
+    mutationFn: AuthService.logout,
+    onSuccess: () => {
+      queryClient.clear()
+      navigate("/", { replace: true })
     },
   })
 
@@ -115,6 +123,16 @@ export default function AccountPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Button
+        variant="outline"
+        className="w-full justify-center border-white/10 bg-white/[0.03] hover:bg-white/10 sm:w-auto"
+        disabled={logout.isPending}
+        onClick={() => logout.mutate()}
+      >
+        <LogOut className="size-4" />
+        {logout.isPending ? "Uscita..." : "Esci"}
+      </Button>
 
       <Card className="border-destructive/40">
         <CardHeader>
