@@ -17,6 +17,9 @@ export const registerSchema = z
     email: z.email("Email non valida"),
     password: z.string().min(8, "Minimo 8 caratteri"),
     password_confirmation: z.string(),
+    privacy_accepted: z.boolean().refine((value) => value, {
+      message: "Devi accettare l'informativa privacy",
+    }),
   })
   .refine((d) => d.password === d.password_confirmation, {
     message: "Le password non coincidono",
@@ -32,6 +35,7 @@ export default function RegisterForm() {
       email: "",
       password: "",
       password_confirmation: "",
+      privacy_accepted: false,
     },
   })
   const navigate = useNavigate()
@@ -39,11 +43,13 @@ export default function RegisterForm() {
   const from = (location.state as { from?: string } | null)?.from ?? "/"
 
   async function onSubmit(values: z.infer<typeof registerSchema>) {
+    const { privacy_accepted: _privacyAccepted, ...registerValues } = values
+
     try {
       await AuthService.register({
-        ...values,
-        name: capitalizeName(values.name),
-        last_name: capitalizeName(values.last_name),
+        ...registerValues,
+        name: capitalizeName(registerValues.name),
+        last_name: capitalizeName(registerValues.last_name),
       })
       toast.success("Registrazione completata. Ora puoi accedere.")
       navigate("/login", { state: { from }, replace: true })
@@ -95,6 +101,32 @@ export default function RegisterForm() {
         <FieldError>
           {form.formState.errors.password_confirmation?.message}
         </FieldError>
+      </Field>
+      <Field>
+        <label
+          htmlFor="privacy_accepted"
+          className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.025] p-4 text-sm leading-6 text-muted-foreground"
+        >
+          <input
+            id="privacy_accepted"
+            type="checkbox"
+            className="mt-1 size-4 shrink-0 rounded border-white/20 bg-transparent accent-white"
+            {...form.register("privacy_accepted")}
+          />
+          <span>
+            Ho letto e accetto l'informativa sulla{" "}
+            <Link
+              to="/privacy"
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium text-foreground underline underline-offset-4"
+            >
+              privacy
+            </Link>
+            .
+          </span>
+        </label>
+        <FieldError>{form.formState.errors.privacy_accepted?.message}</FieldError>
       </Field>
       <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
         Registrati
