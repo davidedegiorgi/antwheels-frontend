@@ -153,9 +153,6 @@ export default function QuoteDetailPage() {
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>12% maggiorazione</span>
-          </div>
           <div className="flex justify-between border-t border-white/10 pt-5 text-xl font-semibold">
             <span>Totale</span>
             <span>{formatPrice(details.total)}</span>
