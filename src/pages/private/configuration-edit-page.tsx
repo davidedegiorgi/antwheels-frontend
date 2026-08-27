@@ -4,11 +4,17 @@ import PricePanel from "@/components/price-panel"
 import { Button } from "@/components/ui/button"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { OPTIONAL_CATEGORY_LABELS, SPOKE_OPTION_ORDER } from "@/data/wheel-brand"
+import {
+  HUB_OPTION_ORDER,
+  OPTIONAL_CATEGORY_LABELS,
+  SPOKE_OPTION_ORDER,
+  getWheelHubThumbnail,
+} from "@/data/wheel-brand"
 import { CatalogService } from "@/features/catalog/catalog.service"
-import type { WheelComponent } from "@/features/catalog/catalog.type"
+import type { WheelComponent, WheelHub } from "@/features/catalog/catalog.type"
 import { ConfigurationsService } from "@/features/configurations/configurations.service"
-import { calculateLivePrice } from "@/lib/compatibility"
+import { calculateLivePrice, getCompatibilityWarning, isWheelHubCompatible } from "@/lib/compatibility"
+import { cn, formatPrice } from "@/lib/utils"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
@@ -30,23 +36,41 @@ export default function ConfigurationEditPage() {
     queryKey: ["components"],
     queryFn: CatalogService.listWheelComponents,
   })
+  const { data: hubs = [] } = useQuery({
+    queryKey: ["wheel-hubs"],
+    queryFn: CatalogService.listWheelHubs,
+  })
 
   const [name, setName] = useState("")
+  const [wheelHubId, setWheelHubId] = useState<number | undefined>()
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     if (config && !initialized) {
       setName(config.name ?? "")
+      setWheelHubId(config.wheel_hub_id)
       setSelectedIds(config.components?.map((o) => o.id) ?? [])
       setInitialized(true)
     }
   }, [config, initialized])
 
+  const wheelHubs = useMemo(() => {
+    const officialHubNames = new Set<string>(HUB_OPTION_ORDER)
+
+    return hubs
+      .filter((hub) => hub.wheel_category_id === config?.wheel_category_id)
+      .filter((hub) => officialHubNames.has(hub.name))
+      .sort((a, b) => HUB_OPTION_ORDER.indexOf(a.name as typeof HUB_OPTION_ORDER[number]) -
+        HUB_OPTION_ORDER.indexOf(b.name as typeof HUB_OPTION_ORDER[number]))
+  }, [config?.wheel_category_id, hubs])
+
+  const selectedWheelHub = wheelHubs.find((hub) => hub.id === wheelHubId) ?? config?.wheel_hub
+
   const total = config
     ? calculateLivePrice(
         parseFloat(config.wheel_category?.base_price ?? "0"),
-        parseFloat(config.wheel_hub?.price ?? "0"),
+        selectedWheelHub ? parseFloat(selectedWheelHub.price) : 0,
         selectedIds,
         components,
         config.wheel_category?.name
@@ -86,6 +110,7 @@ export default function ConfigurationEditPage() {
     mutationFn: () =>
       ConfigurationsService.update(configId, {
         name,
+        wheel_hub_id: wheelHubId,
         component_ids: selectedIds,
       }),
     onSuccess: () => {
@@ -115,7 +140,6 @@ export default function ConfigurationEditPage() {
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
 
-        <h2 className="mb-4 mt-8 text-lg font-medium">Profilo e raggi</h2>
         <div className="space-y-8">
           {optionGroups.map(([label, groupOptionals]) => (
             <section key={label} className="rounded-xl border bg-card p-5 shadow-sm">
@@ -129,13 +153,36 @@ export default function ConfigurationEditPage() {
                 components={groupOptionals}
                 ruleOptionals={components}
                 selectedIds={selectedIds}
-                wheelHub={config.wheel_hub}
+                wheelHub={selectedWheelHub}
                 wheelCategoryId={config.wheel_category?.id}
                 modelName={config.wheel_category?.name}
                 onChange={setSelectedIds}
               />
             </section>
           ))}
+          <section className="rounded-xl border bg-card p-5 shadow-sm">
+            <h3 className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium">
+              Mozzo
+              <span className="text-xs font-normal text-muted-foreground">
+                {wheelHubs.length}
+              </span>
+            </h3>
+            <HubPicker
+              wheelHubs={wheelHubs}
+              wheelCategoryId={config.wheel_category_id}
+              selectedId={wheelHubId}
+              onSelect={(id) => {
+                const nextWheelHub = wheelHubs.find((hub) => hub.id === id)
+                const compatibleSelectedIds = selectedIds.filter((optionalId) => {
+                  const optional = components.find((item) => item.id === optionalId)
+                  return optional ? !getCompatibilityWarning(nextWheelHub, optional) : true
+                })
+
+                setSelectedIds(compatibleSelectedIds)
+                setWheelHubId(id)
+              }}
+            />
+          </section>
         </div>
 
         <Button
@@ -153,6 +200,7 @@ export default function ConfigurationEditPage() {
 
 const OPTION_GROUP_ORDER = [
   "Profilo",
+  "Mozzo",
   "Raggi",
 ]
 
@@ -183,4 +231,59 @@ function isProfileAvailableForModel(optional: WheelComponent, modelName?: string
   if (model.includes("gravel")) return ["30mm", "40mm", "35/40mm wave"].includes(profile)
 
   return ["30mm", "45mm", "60mm", "45/50mm wave"].includes(profile)
+}
+
+function HubPicker({
+  wheelHubs,
+  wheelCategoryId,
+  selectedId,
+  onSelect,
+}: {
+  wheelHubs: WheelHub[]
+  wheelCategoryId: number
+  selectedId?: number
+  onSelect: (id: number) => void
+}) {
+  return (
+    <div className="space-y-2">
+      {wheelHubs.map((hub) => {
+        const compatible = isWheelHubCompatible(wheelCategoryId, hub)
+        const image = hub.image_url ?? getWheelHubThumbnail(hub.name)
+
+        return (
+          <button
+            key={hub.id}
+            type="button"
+            disabled={!compatible}
+            onClick={() => onSelect(hub.id)}
+            className={cn(
+              "grid w-full items-center gap-4 rounded-lg border bg-background p-3 text-left transition-all hover:border-primary/40 hover:bg-accent/40 hover:shadow-sm",
+              image
+                ? "grid-cols-[4.5rem_minmax(0,1fr)_auto]"
+                : "grid-cols-[minmax(0,1fr)_auto]",
+              selectedId === hub.id && "border-primary bg-primary/5 shadow-sm",
+              !compatible && "cursor-not-allowed opacity-40"
+            )}
+          >
+            {image && (
+              <span
+                className={cn(
+                  "relative flex size-16 items-center justify-center overflow-hidden rounded-full border bg-muted/30 transition-colors",
+                  selectedId === hub.id ? "border-primary ring-2 ring-primary/15" : "border-border"
+                )}
+              >
+                <img src={image} alt={hub.name} className="size-full object-cover" loading="lazy" />
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="font-medium">{hub.name}</p>
+            </div>
+            <span className="shrink-0 text-sm font-medium">
+              {parseFloat(hub.price) > 0 ? `+ ${formatPrice(hub.price)}` : "Incluso"}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
 }

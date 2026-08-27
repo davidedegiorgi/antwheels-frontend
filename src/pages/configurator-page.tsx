@@ -211,6 +211,7 @@ export default function ConfiguratorPage() {
       selectedModel.name
     )
   }, [selectedModel, selectedWheelHub, selectedOptionalIds, allOptionals])
+  const surchargeAmount = total - total / 1.12
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -459,9 +460,8 @@ export default function ConfiguratorPage() {
                   </dl>
                   <div className="rounded-lg border bg-background p-4 text-sm">
                     <p className="text-muted-foreground">12% maggiorazione</p>
-                    <div className="mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
-                      <span>Totale</span>
-                      <span>{formatCurrency(total)}</span>
+                    <div className="mt-2 text-lg font-semibold text-primary">
+                      {formatCurrency(surchargeAmount)}
                     </div>
                   </div>
                   <Field>

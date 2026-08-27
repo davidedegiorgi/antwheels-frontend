@@ -68,6 +68,7 @@ export default function QuoteDetailPage() {
   if (!data) return <p>Preventivo non trovato</p>
 
   const { quote, details } = data
+  const surchargeAmount = Number(details.total) - Number(details.total) / 1.12
   const profile = details.components.find(isProfileComponent)
   const spokeComponent = details.components.find(isSpokeComponent)
   const otherComponents = details.components.filter(
@@ -155,6 +156,7 @@ export default function QuoteDetailPage() {
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>12% maggiorazione</span>
+            <span>{formatPrice(surchargeAmount)}</span>
           </div>
           <div className="flex justify-between border-t border-white/10 pt-5 text-xl font-semibold">
             <span>Totale</span>
