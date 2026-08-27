@@ -457,6 +457,13 @@ export default function ConfiguratorPage() {
                       meta={selectedSpoke ? `${formatCurrency(parseFloat(selectedSpoke.price))} cad. x ${getSpokeCount(selectedModel?.name)} pz` : undefined}
                     />
                   </dl>
+                  <div className="rounded-lg border bg-background p-4 text-sm">
+                    <p className="text-muted-foreground">12% maggiorazione</p>
+                    <div className="mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
+                      <span>Totale</span>
+                      <span>{formatCurrency(total)}</span>
+                    </div>
+                  </div>
                   <Field>
                     <FieldLabel htmlFor="configName">Nome configurazione</FieldLabel>
                     <Input
