@@ -180,7 +180,7 @@ function isProfileAvailableForModel(optional: WheelComponent, modelName?: string
   const profile = formatOptionalDisplayName(optional.name).toLowerCase()
 
   if (model.includes("mtb")) return profile === "20mm"
-  if (model.includes("gravel")) return ["30mm", "40mm", "35/40mm"].includes(profile)
+  if (model.includes("gravel")) return ["30mm", "40mm", "35/40mm wave"].includes(profile)
 
   return ["30mm", "45mm", "60mm", "45/50mm wave"].includes(profile)
 }
