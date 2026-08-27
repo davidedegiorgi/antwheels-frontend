@@ -16,7 +16,7 @@ import { ConfigurationsService } from "@/features/configurations/configurations.
 import { calculateLivePrice, getCompatibilityWarning, isWheelHubCompatible } from "@/lib/compatibility"
 import { cn, formatPrice } from "@/lib/utils"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router"
 import { toast } from "sonner"
 
@@ -142,47 +142,51 @@ export default function ConfigurationEditPage() {
 
         <div className="space-y-8">
           {optionGroups.map(([label, groupOptionals]) => (
-            <section key={label} className="rounded-xl border bg-card p-5 shadow-sm">
-              <h3 className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium">
-                {label}
-                <span className="text-xs font-normal text-muted-foreground">
-                  {groupOptionals.length}
-                </span>
-              </h3>
-              <OptionalPicker
-                components={groupOptionals}
-                ruleOptionals={components}
-                selectedIds={selectedIds}
-                wheelHub={selectedWheelHub}
-                wheelCategoryId={config.wheel_category?.id}
-                modelName={config.wheel_category?.name}
-                onChange={setSelectedIds}
-              />
-            </section>
-          ))}
-          <section className="rounded-xl border bg-card p-5 shadow-sm">
-            <h3 className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium">
-              Mozzo
-              <span className="text-xs font-normal text-muted-foreground">
-                {wheelHubs.length}
-              </span>
-            </h3>
-            <HubPicker
-              wheelHubs={wheelHubs}
-              wheelCategoryId={config.wheel_category_id}
-              selectedId={wheelHubId}
-              onSelect={(id) => {
-                const nextWheelHub = wheelHubs.find((hub) => hub.id === id)
-                const compatibleSelectedIds = selectedIds.filter((optionalId) => {
-                  const optional = components.find((item) => item.id === optionalId)
-                  return optional ? !getCompatibilityWarning(nextWheelHub, optional) : true
-                })
+            <Fragment key={label}>
+              <section className="rounded-xl border bg-card p-5 shadow-sm">
+                <h3 className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium">
+                  {label}
+                  <span className="text-xs font-normal text-muted-foreground">
+                    {groupOptionals.length}
+                  </span>
+                </h3>
+                <OptionalPicker
+                  components={groupOptionals}
+                  ruleOptionals={components}
+                  selectedIds={selectedIds}
+                  wheelHub={selectedWheelHub}
+                  wheelCategoryId={config.wheel_category?.id}
+                  modelName={config.wheel_category?.name}
+                  onChange={setSelectedIds}
+                />
+              </section>
+              {label === "Profilo" && (
+                <section className="rounded-xl border bg-card p-5 shadow-sm">
+                  <h3 className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium">
+                    Mozzo
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {wheelHubs.length}
+                    </span>
+                  </h3>
+                  <HubPicker
+                    wheelHubs={wheelHubs}
+                    wheelCategoryId={config.wheel_category_id}
+                    selectedId={wheelHubId}
+                    onSelect={(id) => {
+                      const nextWheelHub = wheelHubs.find((hub) => hub.id === id)
+                      const compatibleSelectedIds = selectedIds.filter((optionalId) => {
+                        const optional = components.find((item) => item.id === optionalId)
+                        return optional ? !getCompatibilityWarning(nextWheelHub, optional) : true
+                      })
 
-                setSelectedIds(compatibleSelectedIds)
-                setWheelHubId(id)
-              }}
-            />
-          </section>
+                      setSelectedIds(compatibleSelectedIds)
+                      setWheelHubId(id)
+                    }}
+                  />
+                </section>
+              )}
+            </Fragment>
+          ))}
         </div>
 
         <Button

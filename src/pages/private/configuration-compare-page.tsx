@@ -76,9 +76,6 @@ export default function ConfigurationComparePage() {
             <GitCompareArrows className="size-7" />
             Confronta configurazioni
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            Analizza differenze di prezzo, mozzo e optional selezionati.
-          </p>
         </div>
       </div>
 
