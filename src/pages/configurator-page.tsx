@@ -7,7 +7,6 @@ import {
   OPTIONAL_CATEGORY_LABELS,
   getWheelHubThumbnail,
   SPOKE_OPTION_ORDER,
-  WIZARD_STEPS,
 } from "@/data/wheel-brand"
 import { CatalogService } from "@/features/catalog/catalog.service"
 import type { WheelHub, WheelComponent } from "@/features/catalog/catalog.type"
@@ -239,18 +238,15 @@ export default function ConfiguratorPage() {
     },
   })
 
-  // indice dello step attivo (per il nav)
-  const stepIndex = WIZARD_STEPS.findIndex((s) => s.id === step)
-  const progressStepCount = Math.max(WIZARD_STEPS.length - 1, 1)
-  const mtbStartsWithProfile = selectedModel?.name.toLowerCase().includes("mtb") ?? false
+  const selectedComponentCount = [
+    selectedProfile,
+    selectedWheelHub,
+    selectedSpoke,
+  ].filter(Boolean).length
   const progressPercent =
     modelsLoading || !selectedModel
       ? 0
-      : stepIndex <= 0
-        ? mtbStartsWithProfile
-          ? (1 / progressStepCount) * 100
-          : 0
-        : (stepIndex / progressStepCount) * 100
+      : (selectedComponentCount / 3) * 100
 
   const isMtbModel = selectedModel?.name.toLowerCase().includes("mtb") ?? false
 
@@ -460,6 +456,13 @@ export default function ConfiguratorPage() {
                       meta={selectedSpoke ? `${formatCurrency(parseFloat(selectedSpoke.price))} cad. x ${getSpokeCount(selectedModel?.name)} pz` : undefined}
                     />
                   </dl>
+                  <div className="rounded-lg border bg-background p-4 text-sm">
+                    <p className="text-muted-foreground">12% maggiorazione</p>
+                    <div className="mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
+                      <span>Totale</span>
+                      <span>{formatCurrency(total)}</span>
+                    </div>
+                  </div>
                   <Field>
                     <FieldLabel htmlFor="configName">Nome configurazione</FieldLabel>
                     <Input
