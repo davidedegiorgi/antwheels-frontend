@@ -41,7 +41,7 @@ function getWheelCategoryDisplayName(modelName?: string) {
 }
 
 function formatOptionalDisplayName(name: string) {
-  return name.replace(/^Profilo\s+(\d+)\s*mm$/i, "$1mm")
+  return name.replace(/^Profilo\s+/i, "").replace(/\s+mm/gi, "mm")
 }
 
 function formatCurrency(value: number) {
@@ -257,12 +257,8 @@ export default function ConfiguratorPage() {
   const interiorOptionals = useMemo(() => {
     const profiles = uniqueWheelImageOptionals(allOptionals.filter(isInteriorOptional))
 
-    if (isMtbModel) {
-      return profiles.filter((optional) => optional.name.toLowerCase().includes("20"))
-    }
-
-    return profiles.filter((optional) => !optional.name.toLowerCase().includes("20"))
-  }, [allOptionals, isMtbModel])
+    return profiles.filter((optional) => isProfileAvailableForModel(optional, selectedModel?.name))
+  }, [allOptionals, selectedModel?.name])
 
   useEffect(() => {
     if (!isMtbModel || interiorOptionals.length !== 1) return
@@ -576,6 +572,16 @@ function isInteriorOptional(optional: WheelComponent) {
 
 function uniqueWheelImageOptionals(components: WheelComponent[]) {
   return components
+}
+
+function isProfileAvailableForModel(optional: WheelComponent, modelName?: string) {
+  const model = modelName?.toLowerCase() ?? ""
+  const profile = formatOptionalDisplayName(optional.name).toLowerCase()
+
+  if (model.includes("mtb")) return profile === "20mm"
+  if (model.includes("gravel")) return ["30mm", "40mm", "35/40mm"].includes(profile)
+
+  return ["30mm", "45mm", "60mm", "45/50mm wave"].includes(profile)
 }
 
 function slowScrollTo(el: HTMLElement, offset?: number) {

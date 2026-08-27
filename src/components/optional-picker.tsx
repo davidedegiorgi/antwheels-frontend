@@ -413,7 +413,7 @@ function formatSpokePrice(value: number) {
 }
 
 function formatOptionalDisplayName(name: string) {
-  return name.replace(/^Profilo\s+(\d+)\s*mm$/i, "$1mm")
+  return name.replace(/^Profilo\s+/i, "").replace(/\s+mm/gi, "mm")
 }
 
 function getCompatibilityPriceDelta(

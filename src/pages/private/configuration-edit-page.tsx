@@ -57,6 +57,9 @@ export default function ConfigurationEditPage() {
     const groups = new Map<string, WheelComponent[]>()
 
     for (const optional of components) {
+      if (isProfileComponent(optional) && !isProfileAvailableForModel(optional, config?.wheel_category?.name)) {
+        continue
+      }
       const label = getOptionDisplayGroup(optional)
       if (label === "Raggi" && !(SPOKE_OPTION_ORDER as readonly string[]).includes(optional.name)) {
         continue
@@ -160,6 +163,24 @@ function getOptionDisplayGroup(optional: WheelComponent) {
   return OPTIONAL_CATEGORY_LABELS[optional.category] ?? optional.category
 }
 
+function isProfileComponent(optional: WheelComponent) {
+  return getOptionDisplayGroup(optional) === "Profilo"
+}
+
 function uniqueWheelImageOptionals(components: WheelComponent[]) {
   return components
+}
+
+function formatOptionalDisplayName(name: string) {
+  return name.replace(/^Profilo\s+/i, "").replace(/\s+mm/gi, "mm")
+}
+
+function isProfileAvailableForModel(optional: WheelComponent, modelName?: string) {
+  const model = modelName?.toLowerCase() ?? ""
+  const profile = formatOptionalDisplayName(optional.name).toLowerCase()
+
+  if (model.includes("mtb")) return profile === "20mm"
+  if (model.includes("gravel")) return ["30mm", "40mm", "35/40mm"].includes(profile)
+
+  return ["30mm", "45mm", "60mm", "45/50mm wave"].includes(profile)
 }

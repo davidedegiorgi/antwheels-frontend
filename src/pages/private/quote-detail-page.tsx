@@ -27,7 +27,7 @@ function getWheelCategoryDisplayName(modelName?: string) {
 }
 
 function formatComponentName(name: string) {
-  return name.replace(/^Profilo\s+(\d+)\s*mm$/i, "$1mm")
+  return name.replace(/^Profilo\s+/i, "").replace(/\s+mm/gi, "mm")
 }
 
 function isProfileComponent(component: { name: string; category: string }) {
