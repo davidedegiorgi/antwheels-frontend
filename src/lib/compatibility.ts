@@ -86,7 +86,7 @@ export function calculateLivePrice(
     .reduce((sum, o) => sum + getOptionalEffectivePrice(o, modelName), 0)
   const subtotal = basePrice + wheel_hubPrice + optionalTotal
 
-  return subtotal * 1.1
+  return subtotal * 1.12
 }
 
 export function getSpokeCount(modelName?: string): number {
